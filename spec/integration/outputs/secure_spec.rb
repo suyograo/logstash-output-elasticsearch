@@ -28,6 +28,29 @@ describe "connect using HTTP Authentication", :elasticsearch_secure => true do
     insist { results["hits"]["total"] } == 1
     insist { results["hits"]["hits"][0]["_source"]["message"] } == "sample message here"
   end
+  
+  it "can upload the logstash template" do
+    subject.multi_receive([
+      LogStash::Event.new("message" => "sample message here"),
+      LogStash::Event.new("somevalue" => 100),
+      LogStash::Event.new("somevalue" => 10),
+      LogStash::Event.new("somevalue" => 1),
+      LogStash::Event.new("country" => "us"),
+      LogStash::Event.new("country" => "at"),
+      LogStash::Event.new("geoip" => { "location" => [ 0.0, 0.0 ] })
+    ])
+
+    @es.indices.refresh
+    results = @es.search(:q => "country.keyword:\"us\"")
+    insist { results["hits"]["total"] } == 1
+    insist { results["hits"]["hits"][0]["_source"]["country"] } == "us"
+
+    # partial or terms should not work.
+    results = @es.search(:q => "country.keyword:\"u\"")
+    insist { results["hits"]["total"] } == 0
+  end
+  
+  
 end
 
 describe "role based access control", :elasticsearch_secure => true do
