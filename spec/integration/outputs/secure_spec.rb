@@ -48,6 +48,9 @@ describe "connect using HTTP Authentication", :elasticsearch_secure => true do
     # partial or terms should not work.
     results = @es.search(:q => "country.keyword:\"u\"")
     insist { results["hits"]["total"] } == 0
+    
+    template = @es.indices.get_template(name: 'mytemplate')
+    insist { template["template"] } == "logstash-*"
   end
   
   
