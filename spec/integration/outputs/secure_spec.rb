@@ -49,7 +49,7 @@ describe "connect using HTTP Authentication", :elasticsearch_secure => true do
     results = @es.search(:q => "country.keyword:\"u\"")
     insist { results["hits"]["total"] } == 0
     
-    template = @es.indices.get_template(name: 'mytemplate')
+    template = @es.indices.get_template(name: 'logstash')
     insist { template["template"] } == "logstash-*"
   end
   
